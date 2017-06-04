@@ -1,0 +1,20 @@
+{
+  "name": "spotify-playlist-backup",
+  "version": "1.0.0",
+  "description": "A utility that can backup playlists songs to another playlist. Mainly used for creating a backup of Discover Weekly.",
+  "author": "Tom van Nimwegen",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "express": "^4.15.2",
+    "moment": "^2.18.1",
+    "mongoose": "^4.9.0",
+    "node-schedule": "~1.2.0",
+    "querystring": "~0.2.0",
+    "request": "~2.81.0",
+    "request-promise-native": "^1.0.4"
+  },
+  "repository": {
+    "url": "https://github.com/Netvon/spotify-playlist-backup.git"
+  }
+}
