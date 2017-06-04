@@ -2,19 +2,43 @@
   "name": "spotify-playlist-backup",
   "version": "1.0.0",
   "description": "A utility that can backup playlists songs to another playlist. Mainly used for creating a backup of Discover Weekly.",
+  "scripts": {
+    "start": "npm run build && npm run watch",
+    "build": "npm run build-ts && npm run tslint",
+    "serve": "node dist/app.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"nodemon dist/app.js\"",
+    "build-ts": "tsc",
+    "watch-ts": "tsc -w",
+    "tslint": "tslint -c tslint.json -p tsconfig.json"
+  },
   "author": "Tom van Nimwegen",
   "license": "GPL-3.0",
+  "repository": {
+    "url": "https://github.com/Netvon/spotify-playlist-backup.git"
+  },
   "dependencies": {
+    "@types/express": "^4.0.35",
+    "@types/mongoose": "^4.7.14",
     "cookie-parser": "~1.4.3",
+    "dotenv": "^4.0.0",
     "express": "^4.15.2",
     "moment": "^2.18.1",
     "mongoose": "^4.9.0",
     "node-schedule": "~1.2.0",
+    "passport": "^0.3.2",
+    "passport-spotify": "^0.3.1",
     "querystring": "~0.2.0",
     "request": "~2.81.0",
-    "request-promise-native": "^1.0.4"
+    "request-promise-native": "^1.0.4",
+    "ts-express-decorators": "^1.4.6",
+    "ts-httpexceptions": "^2.2.3"
   },
-  "repository": {
-    "url": "https://github.com/Netvon/spotify-playlist-backup.git"
+  "devDependencies": {
+    "@types/node": "^7.0.18",
+    "concurrently": "^3.4.0",
+    "nodemon": "^1.11.0",
+    "ts-node": "^3.0.4",
+    "tslint": "^5.2.0",
+    "typescript": "^2.3.2"
   }
 }

@@ -172,7 +172,6 @@ $RECYCLE.BIN/
 /dist
 /tmp
 /out-tsc
-/public
 
 # IDE - VSCode
 .vscode/*
