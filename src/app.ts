@@ -11,7 +11,7 @@ const rootDir = Path.resolve(__dirname)
 
 @ServerSettings({
 	rootDir,
-	port: 7001,
+	port: process.env.PORT,
 	mount: {
 		'': `${rootDir}/controllers/**/**.js`
 	},

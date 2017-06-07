@@ -173,6 +173,8 @@ $RECYCLE.BIN/
 /tmp
 /out-tsc
 
+/secrets
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

@@ -1,18 +1,19 @@
 import { Controller, Get, Response, Request, CookiesParams, Redirect } from 'ts-express-decorators'
 import * as Express from 'express'
-import { SchedulerService, SpotifyApiService } from '../services'
+import { SpotifyApiService } from '../services'
 import { Backup } from '../models'
+import { getSecret } from '../utils'
 
 @Controller('')
 export class AuthController {
 
 	constructor(
-		private schedulerService: SchedulerService,
 		private spotifyApiService: SpotifyApiService,
 	) { }
 
 	@Get('/login')
 	public getLogin(
+		@Request() req: Express.Request,
 		@Response() res: Express.Response
 	) {
 		this.spotifyApiService.redirectToAuth(res)

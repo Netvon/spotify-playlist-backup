@@ -2,7 +2,7 @@ import * as rp from 'request-promise-native'
 import { Service } from 'ts-express-decorators'
 import * as Express from 'express'
 import * as querystring from 'querystring'
-import { generateRandomString } from '../utils'
+import { generateRandomString, getSecret } from '../utils'
 import { User, IUser } from '../models'
 
 import * as spotify from 'models/spotify'
@@ -26,8 +26,8 @@ export interface IPlaylistTracksResponse {
 
 export let baseApiUrl = 'https://api.spotify.com/v1'
 export let baseAuthUrl = 'https://accounts.spotify.com'
-export let client_id = process.env.CLIENT_ID
-export let client_secret = process.env.CLIENT_SECRET
+export let client_id = getSecret('CLIENT_ID')
+export let client_secret = getSecret('CLIENT_SECRET')
 export let stateKey = 'spotify_auth_state'
 export let redirect_uri = process.env.HOST_URL + '/callback'
 
