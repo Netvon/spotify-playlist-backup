@@ -19,5 +19,5 @@ sudo systemctl start mongod
 sudo systemctl enable mongod
 
 # install PM2 / Typescript
-sudo yarn add global pm2 typescript
+sudo yarn global add pm2 typescript
 pm2 startup systemd
