@@ -15,7 +15,5 @@ export function generateRandomString(length: number): string {
 }
 
 export function getSecret(name: string): string {
-	const ds = require('docker-secrets')
-
-	return ds[name] || process.env[name] || ''
+	return process.env[name] || ''
 }
