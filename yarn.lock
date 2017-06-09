@@ -452,10 +452,6 @@ diff@^3.1.0, diff@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.2.0.tgz#c9ce393a4b7cbd0b058a725c93df299027868ff9"
 
-docker-secrets@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/docker-secrets/-/docker-secrets-1.0.2.tgz#bfe0d4b331c33c5a985b245d604df2c3f061e958"
-
 dotenv@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-4.0.0.tgz#864ef1379aced55ce6f95debecdce179f7a0cd1d"

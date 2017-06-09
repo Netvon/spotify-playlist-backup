@@ -1,6 +1,0 @@
-*.md
-*.env
-/.vscode
-/dist
-/node_modules
-/secrets
