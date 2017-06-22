@@ -1,6 +1,19 @@
 import mongoose = require('mongoose')
+import { Mockgoose } from 'mockgoose'
 
-mongoose.Promise = global.Promise
-mongoose.connect(process.env.MONGO_DB)
+function connectDb() {
+	mongoose.Promise = global.Promise
 
-export { mongoose }
+	return new Promise((resolve, reject) => {
+		if (process.env.NODE_ENV === 'testing') {
+			const mockgoose = new Mockgoose(mongoose)
+			mockgoose.prepareStorage()
+				.then(() => mongoose.connect('mongodb://test.com/spb'))
+				.then(resolve).catch(reject)
+		} else {
+			mongoose.connect(process.env.MONGO_DB).then(resolve).catch(reject)
+		}
+	})
+}
+
+export { mongoose, connectDb }

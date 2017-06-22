@@ -12,8 +12,17 @@ export interface IUser extends Document {
 }
 
 const schema = new Schema({
-	userId: { type: String, required: true, unique: true },
-	token: { type: String, required: true },
+	userId: {
+		type: String,
+		required: true,
+		unique: true
+	},
+
+	token: {
+		type: String,
+		required: true
+	},
+
 	refreshToken: { type: String, required: true },
 	expireDate: { type: Date, required: true },
 
@@ -21,6 +30,8 @@ const schema = new Schema({
 		type: Schema.Types.ObjectId,
 		ref: 'Backup'
 	}]
+}, {
+	timestamps: true
 })
 
 export type UserType = Model<IUser>

@@ -12,7 +12,33 @@
 			"sourceMaps": true,
 			"outFiles": [
 				"${workspaceRoot}/dist/**/**.js"
-			]
+			],
+			"preLaunchTask": "build"
+		},
+		{
+			"name": "Run mocha",
+			"type": "node",
+			"request": "launch",
+			"preLaunchTask": "build",
+			"program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+			"stopOnEntry": false,
+			"args": [
+				"dist/test/**/*.js",
+				"--no-timeouts",
+				"--ui",
+				"mocha-typescript",
+				"--require",
+				"source-map-support/register"
+			],
+			"cwd": "${workspaceRoot}",
+			"runtimeExecutable": null,
+			"sourceMaps": true,
+			"outFiles": [
+				"${workspaceRoot}/dist/**/*.js"
+			],
+			"env": {
+				"NODE_ENV": "testing"
+			}
 		}
 	]
 }

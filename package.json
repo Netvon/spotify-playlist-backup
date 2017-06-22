@@ -10,7 +10,8 @@
     "build-ts": "tsc",
     "watch-ts": "tsc -w",
     "tslint": "tslint -c tslint.json -p tsconfig.json",
-    "prod-start": "tsc && node dist/app.js"
+    "prod-start": "tsc && node dist/app.js",
+    "test": "tsc && mocha \"dist/test/**/**.js\" --timeout 120000 --ui mocha-typescript --require source-map-support/register"
   },
   "author": "Tom van Nimwegen",
   "license": "GPL-3.0",
@@ -18,16 +19,18 @@
     "url": "https://github.com/Netvon/spotify-playlist-backup.git"
   },
   "dependencies": {
-    "@types/express": "^4.0.35",
-    "@types/mongoose": "^4.7.14",
+    "body-parser": "^1.17.2",
     "compression": "^1.6.2",
     "cookie-parser": "~1.4.3",
+    "cors": "^2.8.3",
+    "cron-parser": "^2.4.0",
     "dotenv": "^4.0.0",
     "express": "^4.15.2",
     "moment": "^2.18.1",
     "mongoose": "^4.9.0",
     "node-schedule": "~1.2.0",
     "passport": "^0.3.2",
+    "passport-http-bearer": "^1.0.1",
     "passport-spotify": "^0.3.1",
     "querystring": "~0.2.0",
     "request": "~2.81.0",
@@ -36,8 +39,16 @@
     "ts-httpexceptions": "^2.2.3"
   },
   "devDependencies": {
+    "@types/express": "^4.0.35",
+    "@types/mongoose": "^4.7.14",
     "@types/node": "^7.0.18",
+    "@types/passport": "^0.3.3",
+    "@types/request-promise-native": "^1.0.5",
+    "chai": "^4.0.2",
     "concurrently": "^3.4.0",
+    "mocha": "^3.4.2",
+    "mocha-typescript": "^1.1.5",
+    "mockgoose": "^7.3.3",
     "nodemon": "^1.11.0",
     "ts-node": "^3.0.4",
     "tslint": "^5.2.0",

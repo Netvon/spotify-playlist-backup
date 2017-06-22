@@ -34,26 +34,43 @@ export let redirect_uri = process.env.HOST_URL + '/callback'
 @Service()
 export class SpotifyApiService {
 
+	private get defaulApiOptions() {
+		return {
+			baseUrl: baseApiUrl
+		}
+	}
+
+	private get defaulAuthOptions() {
+		return {
+			baseUrl: baseAuthUrl
+		}
+	}
+
+	private defaulOptions(token: string) {
+		return {
+			headers: this.bearerAuthHeader(token),
+			json: true
+		}
+	}
+
 	private bearerAuthHeader(currentToken: string) {
 		return { Authorization: `Bearer ${currentToken}` }
 	}
 
 	public getMe(token: string): Promise<spotify.IUser> {
-		return rp(`${baseApiUrl}/me`, {
-			headers: this.bearerAuthHeader(token),
-			json: true
-		}).promise()
+		return rp(`/me`, { ...this.defaulApiOptions, ...this.defaulOptions(token) } ).promise()
 	}
 
 	public getPlaylist(token: string, userId: string, playlistId: string) {
-		return rp(`${baseApiUrl}/users/${userId}/playlists/${playlistId}`, {
-			headers: this.bearerAuthHeader(token),
-			json: true
+		return rp(`/users/${userId}/playlists/${playlistId}`, {
+			...this.defaulApiOptions,
+			...this.defaulOptions(token)
 		})
 	}
 
 	public getNewToken(refresh_token: string): Promise<ITokenResponse> {
 		const options = {
+			...this.defaulAuthOptions,
 			method: 'POST',
 			headers: {
 				Authorization: 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
