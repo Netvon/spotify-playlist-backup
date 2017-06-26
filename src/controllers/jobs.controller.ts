@@ -1,6 +1,6 @@
-import { Controller, Get, Post, PathParams, Response, Request, UseBefore, Authenticated } from 'ts-express-decorators'
+import { Controller, Get, Post, PathParams, Response, Request, UseBefore, Authenticated, Status } from 'ts-express-decorators'
 import * as Express from 'express'
-import { SchedulerService, SpotifyJobService } from '../services'
+import { SchedulerService, SpotifyJobService, ScheduledBackupsService } from '../services'
 import { Backup } from '../models'
 import { NotFound } from 'ts-httpexceptions'
 
@@ -12,6 +12,7 @@ export class JobsController {
 	constructor(
 		private schedulerService: SchedulerService,
 		private spotifyJobService: SpotifyJobService,
+		private scheduledBackupsService: ScheduledBackupsService
 	) { }
 
 	@Get('')
@@ -20,38 +21,34 @@ export class JobsController {
 	public getJobs(
 		@Request() req: Express.Request
 	) {
-		return Backup.getJobs(this.schedulerService, req.user.id)
+		return this.scheduledBackupsService.getScheduledBackups(req.user.id)
 	}
 
 	@Get('/:id')
 	@UseBefore(BearerAuthMiddleware)
 	@Authenticated()
-	public async getJob(
+	public getJob(
 		@Request() req: Express.Request,
 		@PathParams('id') id: string
 	) {
-		const result = await Backup.getJob(this.schedulerService, id, req.user.id)
-
-		if ( result ) {
-			return result
-		} else {
-			throw new NotFound('No Job with the given id was found')
-		}
+		return this.scheduledBackupsService.getScheduledBackup(id, req.user.id)
 	}
 
-	@Get('/:id')
+	@Post('/:id')
 	@UseBefore(BearerAuthMiddleware)
 	@Authenticated()
-	public async postRunJobNow(
+	@Status(204)
+	public postRunJobNow(
 		@Request() req: Express.Request,
 		@PathParams('id') id: string
 	) {
-		const result = await Backup.invokeNow(this.schedulerService, id, req.user.id)
+		return this.scheduledBackupsService.invokeBackup(id, req.user.id)
+		// const result = await Backup.invokeNow(this.schedulerService, id, req.user.id)
 
-		if ( result ) {
-			return result
-		} else {
-			throw new NotFound('No Job with the given id was found')
-		}
+		// if ( result ) {
+		// 	return result
+		// } else {
+		// 	throw new NotFound('No Job with the given id was found')
+		// }
 	}
 }

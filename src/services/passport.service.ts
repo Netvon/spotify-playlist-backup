@@ -13,7 +13,7 @@ import passport = require('passport')
 export class PassportService {
 
 	static serialize(user, done) {
-		done(null, user._id)
+		done(null, user.id)
 	}
 
 	constructor(private spotifyApi: SpotifyApiService) { }
@@ -30,7 +30,7 @@ export class PassportService {
 				if ( !user ) {
 					done(null, false)
 				} else {
-					const dbUser = await User.findOne({ token })
+					const dbUser = await User.findOne({ userId: user.id })
 
 					if ( !dbUser ) {
 						done(null, false)

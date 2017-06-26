@@ -6,7 +6,7 @@ import { ServerLoader, ServerSettings, InjectorService, GlobalAcceptMimesMiddlew
 import * as Path from 'path'
 import { connectDb } from './config/database'
 import { Backup } from './models'
-import { SchedulerService, SpotifyJobService, PassportService } from './services'
+import { SchedulerService, SpotifyJobService, PassportService, ScheduledBackupsService } from './services'
 import { Exception } from 'ts-httpexceptions'
 
 import passport = require('passport')
@@ -21,6 +21,7 @@ const rootDir = Path.resolve(__dirname)
 	},
 	componentsScan: [
 		`${rootDir}/services/**/**.js`,
+		`${rootDir}/repositories/**.js`,
 		`${rootDir}/middlewares/**/**.js`
 	],
 	serveStatic: {
@@ -52,10 +53,9 @@ export class Server extends ServerLoader {
 	public $onReady() {
 		console.log('Server started...')
 
-		Backup.scheduleBackups(
-			this.injectorService.get<SchedulerService>(SchedulerService),
-			this.injectorService.get<SpotifyJobService>(SpotifyJobService)
-		)
+		if ( !process.env.DISABLE_JOBS ) {
+			this.injectorService.get<ScheduledBackupsService>(ScheduledBackupsService).scheduleBackups()
+		}
 	}
 
 	public $onAuth(request, response, next, authorization?: any): void {
@@ -82,12 +82,12 @@ export class Server extends ServerLoader {
 		}
 
 		if (error.name === 'CastError' || error.name === 'ObjectID' || error.name === 'ValidationError') {
-			response.status(400).send('Bad Request')
+			response.status(400).json({ error: 'Bad Request' })
 			return next()
 		}
 
 		console.error(error)
-		response.status(error.status || 500).send('Internal Error')
+		response.status(error.status || 500).json({ error: 'Internal Error' })
 
 		return next()
 	}

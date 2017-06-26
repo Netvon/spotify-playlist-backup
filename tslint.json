@@ -5,6 +5,9 @@
     ],
     "jsRules": {},
     "rules": {
+		"only-arrow-functions": [
+			false
+		],
         "ordered-imports": [
             false
         ],

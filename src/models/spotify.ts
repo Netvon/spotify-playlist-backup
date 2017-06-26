@@ -89,3 +89,20 @@ export interface IPlaylistTracks {
 	previous?: any
 	total: number
 }
+
+export interface ITokenResponse {
+	access_token: string
+	token_type: string
+	scope: string
+	expires_in: number
+	refresh_token: string
+}
+
+export interface IPlaylistTracksResponse {
+	href: string
+	items: Array<{
+		added_at: string
+		track: { uri: string }
+	}>,
+	total: number
+}

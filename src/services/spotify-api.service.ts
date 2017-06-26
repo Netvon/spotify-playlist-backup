@@ -5,51 +5,45 @@ import * as querystring from 'querystring'
 import { generateRandomString, getSecret } from '../utils'
 import { User, IUser } from '../models'
 
-import * as spotify from 'models/spotify'
-
-export interface ITokenResponse {
-	access_token: string
-	token_type: string
-	scope: string
-	expires_in: number
-	refresh_token: string
-}
-
-export interface IPlaylistTracksResponse {
-	href: string
-	items: Array<{
-		added_at: string
-		track: { uri: string }
-	}>,
-	total: number
-}
-
-export let baseApiUrl = 'https://api.spotify.com/v1'
-export let baseAuthUrl = 'https://accounts.spotify.com'
-export let client_id = getSecret('CLIENT_ID')
-export let client_secret = getSecret('CLIENT_SECRET')
-export let stateKey = 'spotify_auth_state'
-export let redirect_uri = process.env.HOST_URL + '/callback'
+import * as spotify from '../models/spotify'
 
 @Service()
 export class SpotifyApiService {
 
+	private baseApiUrl = 'https://api.spotify.com/v1'
+	private baseAuthUrl = 'https://accounts.spotify.com'
+	private client_id = getSecret('CLIENT_ID')
+	private client_secret = getSecret('CLIENT_SECRET')
+	private stateKey = getSecret('STATE_KEY')
+	private redirect_uri = process.env.HOST_URL + '/callback'
+
 	private get defaulApiOptions() {
 		return {
-			baseUrl: baseApiUrl
+			baseUrl: this.baseApiUrl
 		}
 	}
 
-	private get defaulAuthOptions() {
+	private get defaulRequestOptions() {
 		return {
-			baseUrl: baseAuthUrl
+			...this.defaulApiOptions,
+			json: true
+		}
+	}
+
+	private get defaulTokenOptions() {
+		return {
+			baseUrl: this.baseAuthUrl,
+			json: true,
+			headers: {
+				Authorization: 'Basic ' + (new Buffer(this.client_id + ':' + this.client_secret).toString('base64'))
+			}
 		}
 	}
 
 	private defaulOptions(token: string) {
 		return {
-			headers: this.bearerAuthHeader(token),
-			json: true
+			...this.defaulRequestOptions,
+			headers: this.bearerAuthHeader(token)
 		}
 	}
 
@@ -58,7 +52,7 @@ export class SpotifyApiService {
 	}
 
 	public getMe(token: string): Promise<spotify.IUser> {
-		return rp(`/me`, { ...this.defaulApiOptions, ...this.defaulOptions(token) } ).promise()
+		return rp('/me', { ...this.defaulOptions(token) } ).promise()
 	}
 
 	public getPlaylist(token: string, userId: string, playlistId: string) {
@@ -68,38 +62,31 @@ export class SpotifyApiService {
 		})
 	}
 
-	public getNewToken(refresh_token: string): Promise<ITokenResponse> {
+	public getRenewedToken(refresh_token: string): Promise<spotify.ITokenResponse> {
 		const options = {
-			...this.defaulAuthOptions,
+			...this.defaulTokenOptions,
 			method: 'POST',
-			headers: {
-				Authorization: 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-			},
 			form: {
 				grant_type: 'refresh_token',
 				refresh_token
-			},
-			json: true
+			}
 		}
 
-		return rp(`${baseAuthUrl}/api/token`, options).promise()
+		return rp('/api/token', options).promise()
 	}
 
-	public getToken(code: string): Promise<ITokenResponse> {
+	public getToken(code: string): Promise<spotify.ITokenResponse> {
 		const options = {
+			...this.defaulTokenOptions,
 			method: 'POST',
-			headers: {
-				Authorization: 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-			},
 			form: {
 				code,
 				grant_type: 'authorization_code',
-				redirect_uri
-			},
-			json: true
+				redirect_uri: this.redirect_uri
+			}
 		}
 
-		return rp(`${baseAuthUrl}/api/token`, options).promise()
+		return rp('/api/token', options).promise()
 	}
 
 	public getPlaylistTracks(
@@ -109,8 +96,11 @@ export class SpotifyApiService {
 		limit: number = null,
 		offset: number = null,
 		fields: string = 'href,items(added_at,track(uri)),total'
-	): Promise<IPlaylistTracksResponse | any> {
-		const options = { headers: this.bearerAuthHeader(token), json: true, qs: { fields: undefined, limit: undefined, offset: undefined } }
+	): Promise<spotify.IPlaylistTracksResponse | any> {
+		const options = {
+			...this.defaulOptions(token),
+			qs: { fields: undefined, limit: undefined, offset: undefined }
+		}
 
 		if (fields !== null) {
 			options.qs.fields = fields
@@ -124,11 +114,15 @@ export class SpotifyApiService {
 			options.qs.offset = offset
 		}
 
-		return rp(`${baseApiUrl}/users/${userId}/playlists/${playlistId}/tracks`, options).promise()
+		return rp(`/users/${userId}/playlists/${playlistId}/tracks`, options).promise()
 	}
 
 	public postPlaylistTracks(token: string, userId: string, playlistId: string, trackUris: string[], position = 0) {
-		const options = { method: 'POST', headers: this.bearerAuthHeader(token), json: true, qs: { uris: null } }
+		const options = {
+			...this.defaulOptions(token),
+			method: 'POST',
+			qs: { uris: null }
+		}
 
 		if (trackUris.length > 0) {
 			options.qs.uris = trackUris.join(',')
@@ -136,20 +130,20 @@ export class SpotifyApiService {
 			throw new RangeError('No Track Uris where specified')
 		}
 
-		return rp(`${baseApiUrl}/users/${userId}/playlists/${playlistId}/tracks`, options)
+		return rp(`/users/${userId}/playlists/${playlistId}/tracks`, options)
 	}
 
 	public redirectToAuth(res: Express.Response) {
 		const state = generateRandomString(16)
-		res.cookie(stateKey, state)
+		res.cookie(this.stateKey, state)
 
-		const scope = 'user-read-private user-read-email playlist-read-private playlist-modify-private playlist-modify-public'
-		res.redirect(`${baseAuthUrl}/authorize?` +
+		const scope = 'playlist-read-private playlist-modify-private playlist-modify-public playlist-read-collaborative'
+		res.redirect(`${this.baseAuthUrl}/authorize?` +
 			querystring.stringify({
 				response_type: 'code',
-				client_id,
+				client_id: this.client_id,
 				scope,
-				redirect_uri,
+				redirect_uri: this.redirect_uri,
 				state
 			}))
 	}
@@ -157,12 +151,12 @@ export class SpotifyApiService {
 	public async handleCallback(req: Express.Request, res: Express.Response) {
 		const code = req.query.code || null
 		const state = req.query.state || null
-		const storedState = req.cookies ? req.cookies[stateKey] : null
+		const storedState = req.cookies ? req.cookies[this.stateKey] : null
 
 		if ( state === null || state !== storedState ) {
 			res.redirect('/')
 		} else {
-			res.clearCookie(stateKey)
+			res.clearCookie(this.stateKey)
 
 			const token = await this.getToken(code)
 			const me = await this.getMe(token.access_token)

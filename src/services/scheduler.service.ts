@@ -6,7 +6,10 @@ import * as moment from 'moment'
 export class SchedulerService {
 
 	private scheduler = nodeSchedule
-	private runningJobs: nodeSchedule.Job[] = []
+
+	constructor() {
+		console.log('SchedulerService created')
+	}
 
 	get jobs() {
 		return this.scheduler.scheduledJobs
@@ -16,8 +19,6 @@ export class SchedulerService {
 		const job = nodeSchedule.scheduleJob(name, cron, () => {
 			callback(this.createLogger(name))
 		})
-
-		this.runningJobs.push(job)
 
 		return job.nextInvocation()
 	}

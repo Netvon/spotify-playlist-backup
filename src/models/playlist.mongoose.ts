@@ -1,7 +1,7 @@
 import { mongoose } from '../config/database'
 import { Document, Schema, Model } from 'mongoose'
 
-import { IBackup, IUser } from './'
+import { IBackup, IUser, UpdatedEventArgs } from './'
 
 export interface IPlaylist extends Document {
 	name: string
@@ -9,7 +9,7 @@ export interface IPlaylist extends Document {
 	userId: string
 	forUser: IUser | Schema.Types.ObjectId
 
-	backups: IBackup[] | Schema.Types.ObjectId[]
+	// backups: IBackup[] | Schema.Types.ObjectId[]
 }
 
 const schema = new Schema({
@@ -38,12 +38,12 @@ const schema = new Schema({
 		required: true
 	},
 
-	backups: [{
-		type: Schema.Types.ObjectId,
-		ref: 'Backup'
-	}]
+	// backups: [{
+	// 	type: Schema.Types.ObjectId,
+	// 	ref: 'Backup'
+	// }]
 }, { timestamps: true })
 
+export class PlaylistUpdatedEventArgs extends UpdatedEventArgs<'name' | 'playlistId' | 'userId'> { }
 export type PlaylistType = Model<IPlaylist>
-
 export const Playlist = mongoose.model<IPlaylist>('Playlist', schema) as PlaylistType

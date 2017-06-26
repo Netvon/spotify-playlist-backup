@@ -19,17 +19,20 @@ import { Playlist } from '../models'
 import { NotFound, BadRequest } from 'ts-httpexceptions'
 
 import BearerAuthMiddleware from '../middlewares/bearer-auth.middleware'
+import { PlaylistRepository } from '../repositories'
 
 @Controller('/api/playlists')
 export class PlaylistsController {
 
+	constructor(private playlistRepository: PlaylistRepository) {}
+
 	@Get('')
 	@UseBefore(BearerAuthMiddleware)
 	@Authenticated()
-	public async getAll(
+	public getAll(
 		@Request() req: Express.Request
 	) {
-		return await Playlist.find({ forUser: req.user.id }, 'name playlistId userId')
+		return this.playlistRepository.withUser(req.user).findAll()
 	}
 
 	@Get('/:id')
@@ -39,19 +42,14 @@ export class PlaylistsController {
 		@Request() req: Express.Request,
 		@PathParams('id') id: string
 	) {
-		const playlist = await Playlist.findById(id, 'name playlistId userId').where('forUser', req.user.id)
-		if ( !playlist ) {
-			throw new NotFound('No Playlist with the given id was found')
-		} else {
-			return playlist
-		}
+		return this.playlistRepository.withUser(req.user).find(id)
 	}
 
 	@Post('')
 	@UseBefore(BearerAuthMiddleware)
 	@Authenticated()
 	@Status(201)
-	public async createPlaylist(
+	public createPlaylist(
 		@Request() req: Express.Request,
 		@Required() @BodyParams('name') name: string,
 		@Required() @BodyParams('playlistId') playlistId: string,
@@ -61,7 +59,7 @@ export class PlaylistsController {
 			userId = req.user.userId
 		}
 
-		return await Playlist.create({ name, playlistId, userId })
+		return this.playlistRepository.withUser(req.user).create(name, playlistId, userId)
 	}
 
 	@Patch('/:id')
@@ -74,32 +72,20 @@ export class PlaylistsController {
 		@BodyParams('playlistId') playlistId: string,
 		@BodyParams('userId') userId: string
 	) {
-		if ( !name && !playlistId && !userId ) {
-			throw new BadRequest('No values found on body to Patch')
-		}
-
-		const playlist = await Playlist.findById(id).where('forUser', req.user.userId)
-
-		if ( !playlist ) {
-			throw new NotFound('No Playlist with the given id was found')
-		}
-
-		if ( name ) { playlist.name = name }
-		if ( playlistId ) { playlist.playlistId = playlistId }
-		if ( userId ) { playlist.userId = userId }
-
-		await playlist.save()
-
-		return { message: 'The Playlist was successfully patched' }
+		return this.playlistRepository.withUser(req.user)
+			.withPlaylist(id)
+			.update(name, playlistId, userId)
 	}
 
 	@Delete('/:id')
 	@UseBefore(BearerAuthMiddleware)
 	@Authenticated()
-	public async deletePlaylist(
+	public deletePlaylist(
 		@Request() req: Express.Request,
 		@PathParams('id') id: string
 	) {
-		return await Playlist.remove({ id, forUser: req.user.id })
+		return this.playlistRepository.withUser(req.user)
+			.withPlaylist(id)
+			.remove()
 	}
 }

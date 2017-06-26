@@ -13,7 +13,10 @@
 			"outFiles": [
 				"${workspaceRoot}/dist/**/**.js"
 			],
-			"preLaunchTask": "build"
+			"preLaunchTask": "build",
+			"env": {
+				//"DISABLE_JOBS": "true"
+			}
 		},
 		{
 			"name": "Run mocha",

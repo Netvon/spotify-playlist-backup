@@ -1,40 +1,44 @@
 import { Service } from 'ts-express-decorators'
-import { SpotifyApiService, IPlaylistTracksResponse } from './spotify-api.service'
+import { SpotifyApiService } from './spotify-api.service'
 
-import { IBackup, Backup, IUser, User, IPlaylist  } from '../models'
+import { IBackup, Backup, IUser, User, IPlaylist } from '../models'
+import { IPlaylistTracksResponse } from '../models/spotify'
 
 import { Schema } from 'mongoose'
-
 import * as moment from 'moment'
 
 @Service()
 export class SpotifyJobService {
 	constructor(private spotifyApiService: SpotifyApiService) { }
 
-	createJob(forBackup: IBackup) {
+	createJob(forBackup: IBackup, forUser?: string) {
 		return async () => {
-			const user = await this.checkToken(forBackup, forBackup.forUser.toString())
+			const user = await this.checkAndUpdateToken(forBackup, (forBackup.forUser as IUser).id || forBackup.forUser.toString() || forUser)
 			await this.handleBackup(forBackup, user)
 		}
 	}
 
-	private async checkToken(forBackup: IBackup, userId: string) {
+	private async checkAndUpdateToken(forBackup: IBackup, userId: string) {
 		const user = await User.findById(userId)
-		const now = new Date()
+		const now = moment()
 
-		if (now > user.expireDate) {
+		// get the difference in token expire time and now
+		const diff = Math.abs(moment(user.expireDate).diff(new Date(), 'minutes'))
+
+		// if the difference is less than or equals 2 renew the token
+		if ( diff <= 2 /* minutes */ ) {
 			this.log(forBackup, 'Token is expired, getting new token')
 
-			const params = await this.spotifyApiService.getNewToken(user.refreshToken)
-			const expires = new Date()
-			expires.setSeconds(expires.getSeconds() + params.expires_in)
+			const params = await this.spotifyApiService.getRenewedToken(user.refreshToken)
+			const expires = moment()
+			expires.add(params.expires_in, 'seconds')
 
 			user.token = params.access_token
-			user.expireDate = expires
+			user.expireDate = expires.toDate()
 
 			await user.save()
 
-			this.checkToken(forBackup, user._id.toString())
+			this.checkAndUpdateToken(forBackup, user.id)
 		} else {
 			this.log(forBackup, 'Token is fresh')
 		}
@@ -96,6 +100,6 @@ export class SpotifyJobService {
 	}
 
 	private log(forBackup: IBackup, message: string) {
-		console.log(`[${moment().toLocaleString()} ~ ${forBackup.name}] ${message}`)
+		console.log(`[${moment().toLocaleString()} ~ ${forBackup.id}] ${message}`)
 	}
 }
